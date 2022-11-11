@@ -1,0 +1,21 @@
+// 版本号
+syntax = "proto3";
+
+// 定义包名
+package go.micro.service.product;
+
+// 定义服务
+service Product {
+  rpc AddProduct(ProductInfo) returns (ResponseProduct) {}
+}
+
+// 消息格式
+message ProductInfo {
+  // 这里是字段标识符，不是赋值
+  int64 id = 1;
+  string product_name = 2;
+}
+
+message ResponseProduct {
+  int64 product_id = 1;
+}
