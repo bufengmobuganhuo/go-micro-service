@@ -48,8 +48,8 @@
 **/.idea/compiler.xml
 **/.idea/jarRepositories.xml
 **/.idea/modules.xml
-newmicro/**/.idea/*.iml
-**/.idea/modules
+/**/.idea/*.iml
+/**/.idea/modules
 *.iml
 *.ipr
 
@@ -72,7 +72,7 @@ out/
 atlassian-ide-plugin.xml
 
 # Cursive Clojure plugin
-**/.idea/replstate.xml
+/**/.idea/replstate.xml
 
 # Crashlytics plugin (for Android Studio and IntelliJ)
 com_crashlytics_export_strings.xml
