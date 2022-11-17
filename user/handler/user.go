@@ -2,52 +2,51 @@ package handler
 
 import (
 	"context"
-
-	log "github.com/micro/micro/v3/service/logger"
-
-	user "go_micro_service_user"
+	"github.com/bufengmobuganhuo/go-micro-service/user/domain/model"
+	"github.com/bufengmobuganhuo/go-micro-service/user/domain/service"
+	user "github.com/bufengmobuganhuo/go-micro-service/user/proto/user"
 )
 
-type User struct{}
-
-// Return a new handler
-func New() *User {
-	return &User{}
+type User struct {
+	UserDataService service.IUserDataService
 }
 
-// Call is a single request handler called via client.Call or the generated client code
-func (e *User) Call(ctx context.Context, req *user.Request, rsp *user.Response) error {
-	log.Info("Received User.Call request")
-	rsp.Msg = "Hello " + req.Name
+func (u User) Register(ctx context.Context, request *user.UserRegisterRequest, response *user.UserRegisterResponse) error {
+	userRegistry := &model.User{
+		UserName:     request.UserName,
+		FirstName:    request.FirstName,
+		HashPassword: request.Pwd,
+	}
+	_, err := u.UserDataService.AddUser(userRegistry)
+	if err != nil {
+		return err
+	}
+	response.Message = "添加成功"
 	return nil
 }
 
-// Stream is a server side stream handler called via client.Stream or the generated client code
-func (e *User) Stream(ctx context.Context, req *user.StreamingRequest, stream user.User_StreamStream) error {
-	log.Infof("Received User.Stream request with count: %d", req.Count)
-
-	for i := 0; i < int(req.Count); i++ {
-		log.Infof("Responding: %d", i)
-		if err := stream.Send(&user.StreamingResponse{
-			Count: int64(i),
-		}); err != nil {
-			return err
-		}
+func (u User) Login(ctx context.Context, request *user.UserLoginRequest, response *user.UserLoginResponse) error {
+	isOk, err := u.UserDataService.CheckPwd(request.UserName, request.Pwd)
+	if err != nil {
+		return err
 	}
-
+	response.IsSuccess = isOk
 	return nil
 }
 
-// PingPong is a bidirectional stream handler called via client.Stream or the generated client code
-func (e *User) PingPong(ctx context.Context, stream user.User_PingPongStream) error {
-	for {
-		req, err := stream.Recv()
-		if err != nil {
-			return err
-		}
-		log.Infof("Got ping %v", req.Stroke)
-		if err := stream.Send(&user.Pong{Stroke: req.Stroke}); err != nil {
-			return err
-		}
+func (u User) GetUserInfo(ctx context.Context, request *user.UserInfoRequest, response *user.UserInfoResponse) error {
+	user, err := u.UserDataService.FindUserByName(request.UserName)
+	if err != nil {
+		return err
 	}
+	response = UserForResponse(user)
+	return nil
+}
+
+func UserForResponse(userModel *model.User) *user.UserInfoResponse {
+	response := &user.UserInfoResponse{}
+	response.UserId = userModel.ID
+	response.FirstName = userModel.FirstName
+	response.UserName = userModel.UserName
+	return response
 }
