@@ -7,5 +7,5 @@ type User struct {
 	UserName  string `gorm:"unique_index;not_null"`
 	FirstName string `gorm:"not_null"`
 	// 密码
-	HashPassword string
+	HashPassword string `gorm:"not_null"`
 }

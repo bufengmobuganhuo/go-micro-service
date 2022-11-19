@@ -7,6 +7,7 @@ import (
 	"github.com/bufengmobuganhuo/go-micro-service/user/handler"
 	user "github.com/bufengmobuganhuo/go-micro-service/user/proto/user"
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/micro/go-micro/v2"
 )
 
@@ -20,7 +21,7 @@ func main() {
 	srv.Init()
 
 	// 创建数据库链接
-	db, err := gorm.Open("mysql", "root:zy?2526818/micro?charset=utf8")
+	db, err := gorm.Open("mysql", "root:@tcp(localhost:3306)/micro?charset=utf8&loc=Local")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -29,11 +30,15 @@ func main() {
 	db.SingularTable(true)
 
 	userDataService := service2.NewUserDataService(repository.NewUserRepository(db))
-
+	// 注册handler
 	err = user.RegisterUserHandler(srv.Server(), &handler.User{
-		userDataService,
+		UserDataService: userDataService,
 	})
 	if err != nil {
+		fmt.Println(err)
+	}
+	// 运行服务
+	if err := srv.Run(); err != nil {
 		fmt.Println(err)
 	}
 }

@@ -50,5 +50,5 @@ func NewUserRepository(db *gorm.DB) IUserRepository {
 }
 
 func (u *UseRepository) InitTable() error {
-	return u.mysqlDb.Create(&model.User{}).Error
+	return u.mysqlDb.CreateTable(&model.User{}).Error
 }
