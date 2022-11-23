@@ -7,6 +7,7 @@ import (
 	"github.com/bufengmobuganhuo/go-micro-service/category/domain/service"
 	"github.com/bufengmobuganhuo/go-micro-service/category/proto/category"
 	"github.com/micro/go-micro/v2/client"
+	log "github.com/micro/go-micro/v2/logger"
 )
 
 type Category struct {
@@ -67,7 +68,7 @@ func (c Category) FindCategoryByName(ctx context.Context, req *category.FindByNa
 	return resp, nil
 }
 
-func (c Category) FindCategoryByID(ctx context.Context, req *category.FindByIdRequest,
+func (c Category) FindCategoryById(ctx context.Context, req *category.FindByIdRequest,
 	opts ...client.CallOption) (resp *category.CategoryResponse, err error) {
 	category, err := c.CategoryDataService.FindCategoryByID(req.CategoryId)
 	if err != nil {
@@ -82,22 +83,42 @@ func (c Category) FindCategoryByID(ctx context.Context, req *category.FindByIdRe
 
 func (c Category) FindCategoryByLevel(ctx context.Context, req *category.FindByLevelRequest,
 	opts ...client.CallOption) (resp *category.FindAllResponse, err error) {
-	categories, err := c.CategoryDataService.FindCategoryByLevel(req.Level)
+	categories, err := c.CategoryDataService.FindCategoryByLevel(req.CategoryLevel)
 	if err != nil {
 		return nil, err
 	}
-	err = common.SwapTo(categories, resp)
-	if err != nil {
-		return nil, err
-	}
+	categoryToResponse(categories, resp)
 	return resp, nil
 }
 
-func (c Category) FindCategoryByParent(ctx context.Context, in *category.FindByParentRequest, opts ...client.CallOption) (*category.FindAllResponse, error) {
-
+func (c Category) FindCategoryByParent(ctx context.Context, req *category.FindByParentRequest, opts ...client.CallOption) (
+	resp *category.FindAllResponse, err error) {
+	categories, err := c.CategoryDataService.FindCategoryByParent(req.CategoryParent)
+	if err != nil {
+		return nil, err
+	}
+	categoryToResponse(categories, resp)
+	return resp, nil
 }
 
-func (c Category) FindAllCategory(ctx context.Context, in *category.FindAllRequest, opts ...client.CallOption) (*category.FindAllResponse, error) {
-	//TODO implement me
-	panic("implement me")
+func (c Category) FindAllCategory(ctx context.Context, req *category.FindAllRequest, opts ...client.CallOption) (
+	resp *category.FindAllResponse, err error) {
+	categories, err := c.CategoryDataService.FindAllCategory()
+	if err != nil {
+		return nil, err
+	}
+	categoryToResponse(categories, resp)
+	return resp, nil
+}
+
+func categoryToResponse(categories []model.Category, resp *category.FindAllResponse) {
+	for _, cg := range categories {
+		cr := &category.CategoryResponse{}
+		err := common.SwapTo(cg, cr)
+		if err != nil {
+			log.Error(err)
+			break
+		}
+		resp.Category = append(resp.Category, cr)
+	}
 }
