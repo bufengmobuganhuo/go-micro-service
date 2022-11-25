@@ -21,7 +21,7 @@ func main() {
 	srv.Init()
 
 	// 创建数据库链接
-	db, err := gorm.Open("mysql", "root:@tcp(localhost:3306)/micro?charset=utf8&loc=Local")
+	db, err := gorm.Open("mysql", "root:@tcp(localhost:3306)/user?charset=utf8&loc=Local")
 	if err != nil {
 		fmt.Println(err)
 	}
